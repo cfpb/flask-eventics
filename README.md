@@ -18,4 +18,9 @@ environment variables for configuration.
 * [Python icalendar](http://icalendar.readthedocs.org/en/latest/) 
 * [Python mock (for the tests)](http://www.voidspace.org.uk/python/mock/)
 
+## Licensing 
+
+1. [Terms](TERMS.md)
+2. [License](LICENSE)
+3. [CFPB Source Code Policy](https://github.com/cfpb/source-code-policy/)
 
