@@ -1,11 +1,10 @@
-All notable changes to this project will be documented in this file.
-We follow the [Semantic Versioning 2.0.0](http://semver.org/) format.
 
-
-## x.y.z - YYYY-MM-DD
+## 0.1.0 
 
 ### Added
-- Lorem ipsum dolor sit amet
+- The blueprint to generate ics files from JSON events
+- Configuration options via Flask app config or envvars
+- Tests for above
 
 ### Deprecated
 - Nothing.
