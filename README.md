@@ -2,6 +2,62 @@
 
 This is a [Flask Blueprint](http://flask.pocoo.org/docs/0.10/blueprints/) for generating [iCalendar files](https://www.ietf.org/rfc/rfc2445.txt) from JSON returned by a REST API Endpoint.
 
+**Status:** Proof-of-concept.
+
+## Requirements
+
+Requirements can be satisfied with `pip`:
+
+```shell
+$ pip install -r requirements.txt
+```
+
+* [Flask](http://flask.pocoo.org/)
+* [Python icalendar](http://icalendar.readthedocs.org/en/latest/) 
+* [Python Dateutil](https://dateutil.readthedocs.org/en/latest/)
+* [Python mock (for the tests)](http://www.voidspace.org.uk/python/mock/)
+
+## Installation
+
+To clone and install `flask-eventics` locally in an existing Python 
+[`virtualenv`](https://virtualenv.pypa.io/en/latest/):
+
+```shell
+$ git clone https://github.com/cfpb/flask-eventics
+$ pip install -e flask-eventics
+```
+
+Note: this installs `flask-eventics` in 'editable' mode.
+
+`flask-eventics` can be installed directly from Github:
+
+```shell
+$ pip install git+https://github.com/cfpb/flask-eventics
+```
+
+Once installed, the `flask-eventics` blueprint simply needs to be
+registered with your flask application:
+
+```python
+from flask import Flask
+from flask_eventics import eventics
+
+app = Flask(__name__)
+app.register_blueprint(eventics)
+```
+
+If using [Sheer](https://github.com/cfpb/sheer), `flask-eventics` can be
+added to your site's `_settings/blueprints.json` file.
+
+```json
+{
+  "flask_eventics": {
+    "package": "flask_eventics",
+    "module":  "eventics"
+  }
+}
+```
+
 ## Configuration
 
 `flask-eventics` can optionally use the Flask app configuration or
@@ -102,19 +158,6 @@ END:VEVENT
 END:VCALENDAR
 ```
 
-## Requirements
-
-Requirements can be satisfied with `pip`:
-
-```shell
-$ pip install -r requirements.txt
-```
-
-* [Flask](http://flask.pocoo.org/)
-* [Python icalendar](http://icalendar.readthedocs.org/en/latest/) 
-* [Python Dateutil](https://dateutil.readthedocs.org/en/latest/)
-* [Python mock (for the tests)](http://www.voidspace.org.uk/python/mock/)
-
 ## Licensing 
 
 Public Domain/CC0 1.0
@@ -122,4 +165,5 @@ Public Domain/CC0 1.0
 1. [Terms](TERMS.md)
 2. [License](LICENSE)
 3. [CFPB Source Code Policy](https://github.com/cfpb/source-code-policy/)
+
 
