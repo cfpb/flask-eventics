@@ -3,17 +3,16 @@
 import unittest
 import mock
 
+import icalendar
+import dateutil
+
 from flask import Flask
-from flask_eventics.controllers import eventics, record_state, get_event_json, EVENTICS_CONFIG
+from flask_eventics.controllers import eventics, record_state, get_event_json, generate_ics, EVENTICS_CONFIG
 
 class EventICSTestCase(unittest.TestCase):
 
     def setUp(self):
-        # Basic Flask setup
-        self.app = Flask(__name__)
-        self.app.config['TESTING'] = True
-        self.app.config['WTF_CSRF_ENABLED'] = False
-        self.client = self.app.test_client()
+        pass
 
     def tearDown(self):
         pass
@@ -100,9 +99,43 @@ class EventICSTestCase(unittest.TestCase):
 
 
     def test_generate_ics(self):
-        # This is what we will do when we're able to test something.
-        # response = self.client.get('...')
-        pass
+        """
+        Test that, given a specific set of JSON, the generate_ics
+        function generates valid iCalendar data.
+        """
+        event_json = {
+            "summary": "Test Event",
+            "location": "Washington, DC",
+            "uid": "8DB71F484FA2ABC57F621CB7F1@2013-07-03 09:30:00",
+            "dtstart": "2013-07-03T09:30:00Z",
+            "dtend": "2013-07-03T10:30:00Z",
+            "dtstamp": "2013-07-02T14:29:08Z"
+        }
+
+        with mock.patch('flask_eventics.controllers.get_event_json') as mock_get_event_json:
+            mock_get_event_json.return_value = event_json, 200
+            ics, status, headers = generate_ics('foo')
+
+            # Make sure the ics parses
+            try:
+                icalendar.Calendar.from_ical(ics)
+            except ValueError:
+                self.fail("generate_ics() did not return a valid iCalendar file")
+
+
+    def test_eventics(self):
+        """
+        Test that, as eventics registers and responds appropriately as a
+        Flask Blueprint.
+        """
+        app = Flask(__name__)
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.register_blueprint(eventics)
+
+        client = app.test_client()
+        response = client.get('/events/foo/ics')
+
 
 
 if __name__ == '__main__':

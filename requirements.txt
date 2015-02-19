@@ -1,3 +1,4 @@
 Flask==0.10
 icalendar==3.8
 mock==1.0
+python-dateutil==2.1
