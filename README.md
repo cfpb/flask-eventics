@@ -1,4 +1,4 @@
-# `flask-eventics`
+# flask-eventics
 
 This is a [Flask Blueprint](http://flask.pocoo.org/docs/0.10/blueprints/) for generating [iCalendar files](https://www.ietf.org/rfc/rfc2445.txt) from JSON returned by a REST API Endpoint.
 
@@ -19,7 +19,7 @@ $ pip install -r requirements.txt
 
 ## Installation
 
-To clone and install `flask-eventics` locally in an existing Python 
+To clone and install flask-eventics locally in an existing Python 
 [`virtualenv`](https://virtualenv.pypa.io/en/latest/):
 
 ```shell
@@ -27,15 +27,15 @@ $ git clone https://github.com/cfpb/flask-eventics
 $ pip install -e flask-eventics
 ```
 
-Note: this installs `flask-eventics` in 'editable' mode.
+Note: this installs flask-eventics in 'editable' mode.
 
-`flask-eventics` can be installed directly from Github:
+flask-eventics can be installed directly from Github:
 
 ```shell
 $ pip install git+https://github.com/cfpb/flask-eventics
 ```
 
-Once installed, the `flask-eventics` blueprint simply needs to be
+Once installed, the flask-eventics blueprint simply needs to be
 registered with your flask application:
 
 ```python
@@ -46,7 +46,7 @@ app = Flask(__name__)
 app.register_blueprint(eventics)
 ```
 
-If using [Sheer](https://github.com/cfpb/sheer), `flask-eventics` can be
+If using [Sheer](https://github.com/cfpb/sheer), flask-eventics can be
 added to your site's `_settings/blueprints.json` file.
 
 ```json
@@ -60,7 +60,7 @@ added to your site's `_settings/blueprints.json` file.
 
 ## Configuration
 
-`flask-eventics` can optionally use the Flask app configuration or
+flask-eventics can optionally use the Flask app configuration or
 environment variables for configuration. 
 
 #### `EVENT_ICS_URL` 
@@ -104,15 +104,15 @@ The following configuration options define defaults that will be used
 if the above fields are not available in the JSON object returned by 
 the event source, 
 
-* `EVENT_DEFAULT_SUMMARY`: ``,
+* `EVENT_DEFAULT_SUMMARY`: `''`,
 * `EVENT_DEFAULT_DTSTART`: `2015-01-11T10:30:00Z`,
 * `EVENT_DEFAULT_DTEND`: `2015-01-11T10:30:00Z`,
 * `EVENT_DEFAULT_DTSTAMP`: `2015-01-11T10:30:00Z`,
-* `EVENT_DEFAULT_UID`: ``,
-* `EVENT_DEFAULT_PRIORITY`: 1,
-* `EVENT_DEFAULT_ORGANIZER`: ``,
-* `EVENT_DEFAULT_ORGANIZER_ADDR`: ``,
-* ` EVENT_DEFAULT_LOCATION`: ``,
+* `EVENT_DEFAULT_UID`: `''`,
+* `EVENT_DEFAULT_PRIORITY`: `1`,
+* `EVENT_DEFAULT_ORGANIZER`: `''`,
+* `EVENT_DEFAULT_ORGANIZER_ADDR`: `''`,
+* `EVENT_DEFAULT_LOCATION`: `''`,
 * `EVENT_DEFAULT_STATUS`: `TENTATIVE`,
 
 ## Event Sources
