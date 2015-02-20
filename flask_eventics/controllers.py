@@ -127,7 +127,10 @@ def generate_ics(event_slug):
     calendar.add_component(event)
 
     # Return the ICS formatted calendar
-    return calendar.to_ical(), 200, {'Content-Type': 'text/calendar; charset=utf-8'}
+    return calendar.to_ical(), source_status, {
+        'Content-Type': 'text/calendar; charset=utf-8',
+        'Content-Disposition': 'attachment;filename=' + event_slug + '.ics'
+    }
 
 
 def record_state(state):
