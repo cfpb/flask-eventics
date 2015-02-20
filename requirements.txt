@@ -1,0 +1,5 @@
+Flask==0.10.1
+icalendar==3.8.4
+mock==1.0.1
+python-dateutil==2.1
+requests==2.5.1

@@ -1,98 +1,169 @@
-#### CFPB Open Source Project Template Instructions
+# flask-eventics
 
-1. Create a new project.
-2. Copy these files into the new project.
-3. Update the README, replacing the contents below as prescribed.
-4. Add any libraries, assets, or hard dependencies whose source code will be included
-   in the project's repository to the _Exceptions_ section in the [TERMS](TERMS.md).
-  - If no exceptions are needed, remove that section from TERMS.
-5. If working with an existing code base, answer the questions on the [open source checklist](opensource-checklist.md) 
-6. Delete these instructions and everything up to the _Project Title_ from the README.
-7. Write some great software and tell people about it.
+This is a [Flask Blueprint](http://flask.pocoo.org/docs/0.10/blueprints/) for generating [iCalendar files](https://www.ietf.org/rfc/rfc2445.txt) from JSON returned by a REST API Endpoint.
 
-> Keep the README fresh! It's the first thing people see and will make the initial impression.
+**Status:** Proof-of-concept.
 
-----
+## Requirements
 
-# Project Title
+Requirements can be satisfied with `pip`:
 
-**Description**:  Put a meaningful, short, plain-language description of what
-this project is trying to accomplish and why it matters. 
-Describe the problem(s) this project solves.
-Describe how this software can improve the lives of its audience.
+```shell
+$ pip install -r requirements.txt
+```
 
-Other things to include:
-
-  - **Technology stack**: Indicate the technological nature of the software, including primary programming language(s) and whether the software is intended as standalone or as a module in a framework or other ecosystem.
-  - **Status**:  Alpha, Beta, 1.1, etc. It's OK to write a sentence, too. The goal is to let interested people know where this project is at. This is also a good place to link to the [CHANGELOG](CHANGELOG.md).
-  - **Links to production or demo instances**
-  - Describe what sets this apart from related-projects. Linking to another doc or page is OK if this can't be expressed in a sentence or two.
-
-
-**Screenshot**: If the software has visual components, place a screenshot after the description; e.g.,
-
-![](https://raw.githubusercontent.com/cfpb/open-source-project-template/master/screenshot.png)
-
-
-## Dependencies
-
-Describe any dependencies that must be installed for this software to work. 
-This includes programming languages, databases or other storage mechanisms, build tools, frameworks, and so forth.
-If specific versions of other software are required, or known not to work, call that out.
+* [Flask](http://flask.pocoo.org/)
+* [Python icalendar](http://icalendar.readthedocs.org/en/latest/) 
+* [Python Dateutil](https://dateutil.readthedocs.org/en/latest/)
+* [Python mock (for the tests)](http://www.voidspace.org.uk/python/mock/)
 
 ## Installation
 
-Detailed instructions on how to install, configure, and get the project running.
-This should be frequently tested to ensure reliability. Alternatively, a link to
-another page is fine, but it's important that this works.
+To clone and install flask-eventics locally in an existing Python 
+[`virtualenv`](https://virtualenv.pypa.io/en/latest/):
+
+```shell
+$ git clone https://github.com/cfpb/flask-eventics
+$ pip install -e flask-eventics
+```
+
+Note: this installs flask-eventics in 'editable' mode.
+
+flask-eventics can be installed directly from Github:
+
+```shell
+$ pip install git+https://github.com/cfpb/flask-eventics
+```
+
+Once installed, the flask-eventics blueprint simply needs to be
+registered with your flask application:
+
+```python
+from flask import Flask
+from flask_eventics import eventics
+
+app = Flask(__name__)
+app.register_blueprint(eventics)
+```
+
+If using [Sheer](https://github.com/cfpb/sheer), flask-eventics can be
+added to your site's `_settings/blueprints.json` file.
+
+```json
+{
+  "flask_eventics": {
+    "package": "flask_eventics.controllers",
+    "module":  "eventics"
+  }
+}
+```
 
 ## Configuration
 
-If the software is configurable, describe it in detail, either here or in other documentation to which you link.
+flask-eventics can optionally use the Flask app configuration or
+environment variables for configuration. 
 
-## Usage
+#### `EVENT_ICS_URL` 
+The URL at which ICS files will be available. It should include a named 
+argument, `event_slug`, which will corropsond to an event available 
+from a source url.
 
-Show users how to use the software. 
-Be specific. 
-Use appropriate formatting when showing code snippets.
+Example: `/events/<event_slug>/ics`
 
-## How to test the software
+#### `EVENT_SOURCE` 
+The REST URL at which JSON that describes a particular event is available. 
+This was designed to work with Elasticsearch, but it should work with any 
+REST API that provides all the necessary properties within a single 
+JSON object.
 
-If the software includes automated tests, detail how to run those tests.
+Example: `http://localhost:9200/content/event/<event_slug>/_source`
 
-## Known issues
+#### `EVENT_CALENDAR_PRODID` 
+The iCalendar product identifier that will be returned for generated 
+calendars.
 
-Document any known significant shortcomings with the software.
+#### JSON-iCalendar Field Mapping
 
-## Getting help
+There is a series of configuration options that map iCalendar fields to
+properties on the JSON object returned by the event source. 
 
-Instruct users how to get help with this software; this might include links to an issue tracker, wiki, mailing list, etc.
+* `EVENT_FIELD_SUMMARY`: `summary`
+* `EVENT_FIELD_DTSTART`: `dtstart`
+* `EVENT_FIELD_DTEND`: `dtend`
+* `EVENT_FIELD_DTSTAMP`: `dtstamp`
+* `EVENT_FIELD_UID`: `uid`
+* `EVENT_FIELD_PRIORITY`: `priority`
+* `EVENT_FIELD_ORGANIZER`: `organizer`
+* `EVENT_FIELD_ORGANIZER_ADDR`: `organizer_email`
+* `EVENT_FIELD_LOCATION`: `location`
+* `EVENT_FIELD_STATUS`: `status`
 
-**Example**
+#### Field Defaults
 
-If you have questions, concerns, bug reports, etc, please file an issue in this repository's Issue Tracker.
+The following configuration options define defaults that will be used 
+if the above fields are not available in the JSON object returned by 
+the event source, 
 
-## Getting involved
+* `EVENT_DEFAULT_SUMMARY`: `''`,
+* `EVENT_DEFAULT_DTSTART`: `2015-01-11T10:30:00Z`,
+* `EVENT_DEFAULT_DTEND`: `2015-01-11T10:30:00Z`,
+* `EVENT_DEFAULT_DTSTAMP`: `2015-01-11T10:30:00Z`,
+* `EVENT_DEFAULT_UID`: `''`,
+* `EVENT_DEFAULT_PRIORITY`: `1`,
+* `EVENT_DEFAULT_ORGANIZER`: `''`,
+* `EVENT_DEFAULT_ORGANIZER_ADDR`: `''`,
+* `EVENT_DEFAULT_LOCATION`: `''`,
+* `EVENT_DEFAULT_STATUS`: `TENTATIVE`,
 
-This section should detail why people should get involved and describe key areas you are
-currently focusing on; e.g., trying to get feedback on features, fixing certain bugs, building
-important pieces, etc.
+## Event Sources
 
-General instructions on _how_ to contribute should be stated with a link to [CONTRIBUTING](CONTRIBUTING.md).
+An Event Source is a simply a REST API endpoint that returns a JSON
+object that describes an event. This could be a custom API or a 
+service such as [Elasticsearch](http://www.elasticsearch.org/). With the
+default JSON-iCalendar field mappings above the JSON object returned
+from the REST endpoint might look like this:
 
+```json
+{
+    "dtstamp": "2015-01-11T09:29:08Z", 
+    "uid": "F964B38DB71F484FA2ABC57F621CB7F1@2015-01-11 09:30:00", 
+    "dtend": "2015-01-11T10:30:00Z", 
+    "created": "2015-01-11T10:09:42Z", 
+    "summary": "A Test Meeting", 
+    "location": "Washington, DC", 
+    "dtstart": "2015-01-11T09:30:00Z", 
+    "id": 24407, 
+    "day": "2015-01-11", 
+    "description": ""
+}
+```
 
-----
+This would result in the following iCalendar file being generated:
 
-## Open source licensing info
-1. [TERMS](TERMS.md)
-2. [LICENSE](LICENSE)
+```
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//A Calendar//somewhere.com//
+METHOD:publish
+BEGIN:VEVENT
+SUMMARY:A Test Meeting
+DTSTART;VALUE=DATE-TIME:20150111T093000Z
+DTEND;VALUE=DATE-TIME:20150111T103000Z
+DTSTAMP;VALUE=DATE-TIME:20150111T142908Z
+UID:F964B38DB71F484FA2ABC57F621CB7F1@2015-01-11 09:30:00
+LOCATION:Washington\, DC. 
+ORGANIZER;CN=:MAILTO:
+STATUS:TENTATIVE
+END:VEVENT
+END:VCALENDAR
+```
+
+## Licensing 
+
+Public Domain/CC0 1.0
+
+1. [Terms](TERMS.md)
+2. [License](LICENSE)
 3. [CFPB Source Code Policy](https://github.com/cfpb/source-code-policy/)
 
 
-----
-
-## Credits and references
-
-1. Projects that inspired you
-2. Related projects
-3. Books, papers, talks, or other sources that have meaniginful impact or influence on this project 
