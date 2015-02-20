@@ -52,7 +52,7 @@ added to your site's `_settings/blueprints.json` file.
 ```json
 {
   "flask_eventics": {
-    "package": "flask_eventics",
+    "package": "flask_eventics.controllers",
     "module":  "eventics"
   }
 }
