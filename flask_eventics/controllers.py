@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 import dateutil.parser
 import icalendar
+from pytz import timezone
 
 from urlparse import urlparse, urlunparse
 import requests
@@ -27,10 +28,10 @@ EVENTICS_CONFIG = {
 
     # A REST endpoint for events
     # Example: an elasticsearch endpoint
-    'EVENT_SOURCE': 'http://localhost:9200/content/calendar_event/<event_slug>/_source',
+    'EVENT_SOURCE': 'http://localhost:9200/content/events/<event_slug>/_source',
 
     # Calendar product id
-    'EVENT_CALENDAR_PRODID': '-//A Calendar//somewhere.com//',
+    'EVENT_CALENDAR_PRODID': '-//CFPB//Event Calendar//EN',
 
     # Field mapping for iCalendar fields from JSON object properties
     'EVENT_FIELD_SUMMARY': 'summary',
@@ -97,7 +98,7 @@ def generate_ics(event_slug):
         return '', source_status
 
     # Create the Calendar
-    calendar= icalendar.Calendar()
+    calendar = icalendar.Calendar()
     calendar.add('prodid', EVENTICS_CONFIG['EVENT_CALENDAR_PRODID'])
     calendar.add('version', '2.0')
     calendar.add('method', 'publish')
@@ -105,23 +106,26 @@ def generate_ics(event_slug):
     # Create the event
     event = icalendar.Event()
 
-    # Convenience function to look up and return a field or its default
-    get_field = lambda f: event_json.get(EVENTICS_CONFIG['EVENT_FIELD_' + f],
-                                         EVENTICS_CONFIG['EVENT_DEFAULT_' + f])
-
     # Populate the event
-    event.add('summary', get_field('SUMMARY'))
-    event.add('uid', get_field('UID'))
-    event.add('location', get_field('LOCATION'))
-    event.add('dtstart', dateutil.parser.parse(get_field('DTSTART')))
-    event.add('dtend', dateutil.parser.parse(get_field('DTEND')))
-    event.add('dtstamp', dateutil.parser.parse(get_field('DTSTAMP')))
-    event.add('status', get_field('STATUS'))
-
-    # Create any persons associated with the event
-    organizer = icalendar.vCalAddress('MAILTO:' + get_field('ORGANIZER_ADDR'))
-    organizer.params['cn'] = icalendar.vText(get_field('ORGANIZER'))
-    event.add('organizer', organizer)
+    ics_fields = event_json.get('ics')
+    tz_dict = {'dtstart': 'starting_tzinfo', 'dtend': 'ending_tzinfo'}
+    for ics_field, timezoneName in tz_dict.items():
+        if ics_field in ics_fields:
+            esdate = dateutil.parser.parse(ics_fields[ics_field])
+            naive = esdate.replace(tzinfo=None)
+            if timezoneName in ics_fields:
+                date = timezone(ics_fields[timezoneName]).localize(naive)
+            else:
+                date = esdate.astimezone(timezone('UTC'))
+            event.add(ics_field, date)
+            del ics_fields[ics_field]
+            del ics_fields[timezoneName]
+    for field in ics_fields:
+        if field == 'dtstamp':
+            esdate = dateutil.parser.parse(ics_fields[field])
+            event.add(field, date)
+        else:
+            event.add(field, ics_fields[field])
 
     # Add the event to the calendar
     calendar.add_component(event)
@@ -158,4 +162,3 @@ def record_state(state):
 # decorated functions, which is why this (and generate_ics) are
 # undecorated.
 eventics.record(record_state)
-
