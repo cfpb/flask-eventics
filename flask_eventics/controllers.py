@@ -112,9 +112,8 @@ def generate_ics(event_slug):
     for ics_field, timezoneName in tz_dict.items():
         if ics_field in ics_fields:
             esdate = dateutil.parser.parse(ics_fields[ics_field])
-            naive = esdate.replace(tzinfo=None)
             if timezoneName in ics_fields:
-                date = timezone(ics_fields[timezoneName]).localize(naive)
+                date = esdate.astimezone(timezone(ics_fields[timezoneName]))
             else:
                 date = esdate.astimezone(timezone('UTC'))
             event.add(ics_field, date)
