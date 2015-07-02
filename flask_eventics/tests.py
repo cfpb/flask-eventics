@@ -4,10 +4,11 @@ import unittest
 import mock
 
 import icalendar
-import dateutil
+# import dateutil
 
 from flask import Flask
 from flask_eventics.controllers import eventics, record_state, get_event_json, generate_ics, EVENTICS_CONFIG
+
 
 class EventICSTestCase(unittest.TestCase):
 
@@ -49,21 +50,21 @@ class EventICSTestCase(unittest.TestCase):
         # Test fail through to default value
         record_state(mock_state)
         self.assertEqual(EVENTICS_CONFIG['EVENT_CALENDAR_PRODID'],
-                         '-//A Calendar//somewhere.com//')
+                         '-//CFPB//Event Calendar//EN')
 
         # Test using os.environ value
         with mock.patch.dict('os.environ', {'EVENT_CALENDAR_PRODID':
-                '-//Another Calendar//somewhere.com//'}):
+                             '-//CFPB//Another Event Calendar//EN'}):
             record_state(mock_state)
             self.assertEqual(EVENTICS_CONFIG['EVENT_CALENDAR_PRODID'],
-                             '-//Another Calendar//somewhere.com//')
+                             '-//CFPB//Another Event Calendar//EN')
 
         # Test using the app.config value
         with mock.patch.dict(mock_state.app.config, {'EVENT_CALENDAR_PRODID':
-                '-//My Calendar//anywhere.com//'}):
+                             '-//CFPB//Event Calendar//EN'}):
             record_state(mock_state)
             self.assertEqual(EVENTICS_CONFIG['EVENT_CALENDAR_PRODID'],
-                             '-//My Calendar//anywhere.com//')
+                             '-//CFPB//Event Calendar//EN')
 
     @mock.patch("requests.get")
     def test_get_event_json(self, mock_request_get):
@@ -87,16 +88,15 @@ class EventICSTestCase(unittest.TestCase):
             mock_bad_response
         ]
 
-        EVENTICS_CONFIG['EVENT_SOURCE'] = 'http://localhost:9200/event/<event_slug>/'
+        EVENTICS_CONFIG['EVENT_SOURCE'] = 'http://localhost:9200/events/<event_slug>/'
 
         source_json, source_status = get_event_json('myevent')
         self.assertEqual(source_status, 200)
-        mock_request_get.assert_called_with('http://localhost:9200/event/myevent/')
+        mock_request_get.assert_called_with('http://localhost:9200/events/myevent/')
 
         source_json, source_status = get_event_json('myevent')
         self.assertEqual(source_status, 404)
         self.assertEqual(source_json, {})
-
 
     def test_generate_ics(self):
         """
@@ -104,12 +104,16 @@ class EventICSTestCase(unittest.TestCase):
         function generates valid iCalendar data.
         """
         event_json = {
-            "summary": "Test Event",
-            "location": "Washington, DC",
-            "uid": "8DB71F484FA2ABC57F621CB7F1@2013-07-03 09:30:00",
-            "dtstart": "2013-07-03T09:30:00Z",
-            "dtend": "2013-07-03T10:30:00Z",
-            "dtstamp": "2013-07-02T14:29:08Z"
+            "ics": {
+                "summary": "Test Event",
+                "location": "Washington, DC",
+                "uid": "8DB71F484FA2ABC57F621CB7F1@2013-07-03 09:30:00",
+                "dtstart": "2015-07-01T05:00:00-04:00",
+                'starting_tzinfo': 'America/New_York',
+                "dtend": "2015-07-01T06:00:00-04:00",
+                'ending_tzinfo': 'America/New_York',
+                "dtstamp": "2013-07-02T14:29:08Z"
+            }
         }
 
         with mock.patch('flask_eventics.controllers.get_event_json') as mock_get_event_json:
@@ -121,7 +125,6 @@ class EventICSTestCase(unittest.TestCase):
                 icalendar.Calendar.from_ical(ics)
             except ValueError:
                 self.fail("generate_ics() did not return a valid iCalendar file")
-
 
     def test_eventics(self):
         """
@@ -137,7 +140,5 @@ class EventICSTestCase(unittest.TestCase):
         response = client.get('/events/foo/ics')
 
 
-
 if __name__ == '__main__':
     unittest.main()
-
